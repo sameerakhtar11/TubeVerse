@@ -1,6 +1,10 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { serverURL } from "../src/App";
+import { setUserData } from "../src/redux/userSlice";
+import { showCustomAlert } from "./CustomAlert";
 
 import {
     FaUserPlus,
@@ -11,9 +15,30 @@ import { FcGoogle } from "react-icons/fc";
 import { MdOutlineVideoSettings } from "react-icons/md";
 import { RiAccountCircleLine } from "react-icons/ri";
 
-function Profile() {
+function Profile({ onClose }) {
     const { userData } = useSelector((state) => state.user);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const handleSignOut = async () => {
+        try {
+            const result = await axios.get(serverURL + "/api/auth/signout", {
+                withCredentials: true,
+            });
+            dispatch(setUserData(null));
+            console.log(result.data);
+            showCustomAlert("Signed out Successfully");
+            if (onClose) onClose();
+        } catch (e) {
+            console.log(e);
+            showCustomAlert("SignOut Error");
+        }
+    };
+
+    const handleNavigate = (path) => {
+        navigate(path);
+        if (onClose) onClose();
+    };
 
     return (
         <div
@@ -73,7 +98,7 @@ function Profile() {
                 )}
 
                 <button
-                    onClick={() => navigate("/signup")}
+                    onClick={() => handleNavigate("/signup")}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#3a3a3a] transition-colors duration-200"
                 >
                     <FaUserPlus size={18} />
@@ -81,7 +106,7 @@ function Profile() {
                 </button>
 
                 <button
-                    onClick={() => navigate("/signin")}
+                    onClick={() => handleNavigate("/signin")}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#3a3a3a] transition-colors duration-200"
                 >
                     <FcGoogle size={20} />
@@ -104,6 +129,7 @@ function Profile() {
 
                 {userData && (
                     <button
+                        onClick={handleSignOut}
                         className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors duration-200"
                     >
                         <FaSignOutAlt size={18} />

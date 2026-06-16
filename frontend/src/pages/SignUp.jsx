@@ -11,6 +11,8 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { showCustomAlert } from "../../component/CustomAlert";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 
 function SignUp() {
   const navigate = useNavigate();
@@ -19,7 +21,7 @@ function SignUp() {
 
   const [UserName, setUserName] = useState("");
   const [email, setEmail] = useState("");
-
+  const dispatch = useDispatch()
   const [password, setPassword] = useState("");
   const [ConfirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -93,8 +95,9 @@ function SignUp() {
       );
 
       console.log(result.data);
-
+      dispatch(setUserData(result.data))
       navigate("/");
+      setLoading(false)
       showCustomAlert("Account Created Successfully")
     } catch (error) {
       console.error(error);

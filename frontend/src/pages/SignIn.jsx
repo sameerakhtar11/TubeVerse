@@ -9,7 +9,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
-
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 import { showCustomAlert } from "../../component/CustomAlert";
 import { serverURL } from "../App";
 
@@ -18,7 +19,7 @@ function SignIn() {
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-
+  const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -52,10 +53,12 @@ function SignIn() {
       );
 
       console.log(result.data);
-
+      dispatch(setUserData(result.data.user));
+      navigate("/");
+      setLoading(false);
       showCustomAlert("Sign In Successfully");
 
-      navigate("/");
+
     } catch (error) {
       console.log(error);
 
