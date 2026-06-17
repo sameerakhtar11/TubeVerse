@@ -168,7 +168,7 @@ function Home() {
                     icon={<FaHome />}
                     text="Home"
                     active={active === "Home"}
-                    onClick={() => setActive("Home")}
+                    onClick={() => { setActive("Home"); navigate("/") }}
                 />
 
                 <MobileSideNav
@@ -199,7 +199,7 @@ function Home() {
                     icon={!userData?.photoUrl ? <FaUserCircle /> : <img className="w-8 h-8 rounded-full" src={userData?.photoUrl} alt="photo" />}
                     text="You"
                     active={active === "You"}
-                    onClick={() => setActive("You")}
+                    onClick={() => { setActive("You"); navigate("/mobileprofile") }}
                 />
             </nav>
 

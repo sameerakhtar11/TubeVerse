@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+
 import { serverURL } from "../src/App";
 import { setUserData } from "../src/redux/userSlice";
 import { showCustomAlert } from "./CustomAlert";
+
 import { auth, provider } from "../utils/firebase";
 import { signInWithPopup } from "firebase/auth";
 
@@ -18,58 +20,88 @@ import { FcGoogle } from "react-icons/fc";
 import { MdOutlineVideoSettings } from "react-icons/md";
 import { RiAccountCircleLine } from "react-icons/ri";
 
-function Profile({ onClose }) {
+function Profile() {
     const { userData } = useSelector((state) => state.user);
+
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const [loadingGoogle, setLoadingGoogle] = useState(false);
 
     const handleSignOut = async () => {
         try {
-            const result = await axios.get(serverURL + "/api/auth/signout", {
-                withCredentials: true,
-            });
+            await axios.get(
+                serverURL + "/api/auth/signout",
+                {
+                    withCredentials: true,
+                }
+            );
+
             dispatch(setUserData(null));
-            console.log(result.data);
-            showCustomAlert("Signed out Successfully");
-            if (onClose) onClose();
-        } catch (e) {
-            console.log(e);
-            showCustomAlert("SignOut Error");
+
+            showCustomAlert(
+                "Signed Out Successfully"
+            );
+        } catch (error) {
+            console.log(error);
+            showCustomAlert("Sign Out Error");
         }
     };
 
     const handleGoogleAuth = async () => {
+        if (loadingGoogle) return;
+        setLoadingGoogle(true);
         try {
-            const response = await signInWithPopup(auth, provider);
-            console.log("Google Auth Response", response);
-            let user = response.user;
-            let email = user.email;
-            let photoUrl = user.photoURL;
-            let userName = user.displayName;
+            const response =
+                await signInWithPopup(
+                    auth,
+                    provider
+                );
+
+            const user = response.user;
 
             const formData = new FormData();
-            formData.append("email", email);
-            formData.append("userName", userName);
-            formData.append("photoUrl", photoUrl);
 
-            const result = await axios.post(serverURL + "/api/auth/googleauth", formData, {
-                withCredentials: true,
-            });
-            console.log(result.data)
-            dispatch(setUserData(result.data))
-            showCustomAlert("Google Authentication Successfully")
+            formData.append(
+                "email",
+                user.email
+            );
 
+            formData.append(
+                "userName",
+                user.displayName
+            );
 
+            formData.append(
+                "photoUrl",
+                user.photoURL
+            );
 
+            const result = await axios.post(
+                serverURL +
+                "/api/auth/googleauth",
+                formData,
+                {
+                    withCredentials: true,
+                }
+            );
+
+            dispatch(
+                setUserData(result.data)
+            );
+
+            showCustomAlert(
+                "Google Authentication Successful"
+            );
         } catch (error) {
             console.log(error);
-            showCustomAlert("GoogleAuth Error");
+            if (error.code !== "auth/cancelled-popup-request" && error.code !== "auth/popup-closed-by-user") {
+                showCustomAlert(
+                    "Google Authentication Error"
+                );
+            }
+        } finally {
+            setLoadingGoogle(false);
         }
-    };
-
-    const handleNavigate = (path) => {
-        navigate(path);
-        if (onClose) onClose();
     };
 
     return (
@@ -108,7 +140,16 @@ function Profile({ onClose }) {
                             {userData?.email}
                         </p>
 
-                        <button className="mt-2 text-sm text-blue-400 hover:text-blue-300 transition">
+                        <button
+                            onClick={() =>
+                                navigate(
+                                    userData?.channel
+                                        ? `/channel/${userData._id}`
+                                        : "/create-channel"
+                                )
+                            }
+                            className="mt-2 text-sm text-blue-400 hover:text-blue-300 transition"
+                        >
                             {userData?.channel
                                 ? "View Channel"
                                 : "Create Channel"}
@@ -122,41 +163,72 @@ function Profile({ onClose }) {
 
                 {userData?.channel && (
                     <button
+                        onClick={() =>
+                            navigate("/studio")
+                        }
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#3a3a3a] transition-colors duration-200"
                     >
-                        <MdOutlineVideoSettings size={20} />
-                        <span>TubeVerse Studio</span>
+                        <MdOutlineVideoSettings
+                            size={20}
+                        />
+                        <span>
+                            TubeVerse Studio
+                        </span>
                     </button>
                 )}
 
                 <button
-                    onClick={() => handleNavigate("/signup")}
+                    onClick={() =>
+                        navigate("/signup")
+                    }
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#3a3a3a] transition-colors duration-200"
                 >
                     <FaUserPlus size={18} />
-                    <span>Create New Account</span>
+                    <span>
+                        Create New Account
+                    </span>
                 </button>
 
                 <button
-                    onClick={() => handleGoogleAuth()}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#3a3a3a] transition-colors duration-200"
+                    onClick={handleGoogleAuth}
+                    disabled={loadingGoogle}
+                    className={`w-full flex items-center gap-3 px-4 py-3 transition-colors duration-200
+                        ${loadingGoogle
+                            ? "opacity-50 cursor-not-allowed text-gray-500"
+                            : "hover:bg-[#3a3a3a]"
+                        }`}
                 >
                     <FcGoogle size={20} />
-                    <span>Sign in with Google Account</span>
+                    <span>
+                        {loadingGoogle ? "Signing in..." : "Sign in with Google"}
+                    </span>
                 </button>
 
                 <button
-                    onClick={() => handleNavigate("/signin")}
+                    onClick={() =>
+                        navigate("/signin")
+                    }
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#3a3a3a] transition-colors duration-200"
                 >
                     <FaSignInAlt size={18} />
-                    <span>Sign in with Another Account</span>
+                    <span>
+                        Sign in with Another Account
+                    </span>
                 </button>
 
                 <button
+                    onClick={() =>
+                        navigate(
+                            userData?.channel
+                                ? `/channel/${userData._id}`
+                                : "/create-channel"
+                        )
+                    }
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#3a3a3a] transition-colors duration-200"
                 >
-                    <RiAccountCircleLine size={20} />
+                    <RiAccountCircleLine
+                        size={20}
+                    />
 
                     <span>
                         {userData?.channel
@@ -169,11 +241,17 @@ function Profile({ onClose }) {
 
                 {userData && (
                     <button
-                        onClick={handleSignOut}
+                        onClick={
+                            handleSignOut
+                        }
                         className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors duration-200"
                     >
-                        <FaSignOutAlt size={18} />
-                        <span>Sign Out</span>
+                        <FaSignOutAlt
+                            size={18}
+                        />
+                        <span>
+                            Sign Out
+                        </span>
                     </button>
                 )}
             </div>

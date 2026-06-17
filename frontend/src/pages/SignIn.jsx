@@ -213,12 +213,9 @@ function SignIn() {
 
             <div className="flex justify-between items-center">
               <button
-                className="text-red-400 hover:text-red-300 text-sm"
-                onClick={() =>
-                  showCustomAlert(
-                    "Forgot Password feature coming soon"
-                  )
-                }
+                type="button"
+                className="text-red-400 hover:text-red-300 text-sm transition-colors"
+                onClick={() => navigate("/forgetpassword")}
               >
                 Forgot Password?
               </button>
