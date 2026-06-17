@@ -5,10 +5,13 @@ import axios from "axios";
 import { serverURL } from "../src/App";
 import { setUserData } from "../src/redux/userSlice";
 import { showCustomAlert } from "./CustomAlert";
+import { auth, provider } from "../utils/firebase";
+import { signInWithPopup } from "firebase/auth";
 
 import {
     FaUserPlus,
     FaSignOutAlt,
+    FaSignInAlt,
 } from "react-icons/fa";
 
 import { FcGoogle } from "react-icons/fc";
@@ -32,6 +35,35 @@ function Profile({ onClose }) {
         } catch (e) {
             console.log(e);
             showCustomAlert("SignOut Error");
+        }
+    };
+
+    const handleGoogleAuth = async () => {
+        try {
+            const response = await signInWithPopup(auth, provider);
+            console.log("Google Auth Response", response);
+            let user = response.user;
+            let email = user.email;
+            let photoUrl = user.photoURL;
+            let userName = user.displayName;
+
+            const formData = new FormData();
+            formData.append("email", email);
+            formData.append("userName", userName);
+            formData.append("photoUrl", photoUrl);
+
+            const result = await axios.post(serverURL + "/api/auth/googleauth", formData, {
+                withCredentials: true,
+            });
+            console.log(result.data)
+            dispatch(setUserData(result.data))
+            showCustomAlert("Google Authentication Successfully")
+
+
+
+        } catch (error) {
+            console.log(error);
+            showCustomAlert("GoogleAuth Error");
         }
     };
 
@@ -106,10 +138,18 @@ function Profile({ onClose }) {
                 </button>
 
                 <button
-                    onClick={() => handleNavigate("/signin")}
+                    onClick={() => handleGoogleAuth()}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#3a3a3a] transition-colors duration-200"
                 >
                     <FcGoogle size={20} />
+                    <span>Sign in with Google Account</span>
+                </button>
+
+                <button
+                    onClick={() => handleNavigate("/signin")}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#3a3a3a] transition-colors duration-200"
+                >
+                    <FaSignInAlt size={18} />
                     <span>Sign in with Another Account</span>
                 </button>
 

@@ -102,3 +102,54 @@ export const signOut = async (req, res) => {
 
     }
 }
+
+
+export const googleAuth = async (req, res) => {
+    try {
+        const { userName, email, photoUrl } = req.body;
+        let googlePhoto = photoUrl;
+        if (photoUrl) {
+            try {
+                googlePhoto = await uploadOnCloudinary(photoUrl);
+            } catch (error) {
+                // return res.status(400).json({message:"Cloudinary upload Failed"})
+                console.log("Cloudinary upload Failed")
+            }
+        }
+
+
+        const user = await User.findOne({ email })
+        if (!user) {
+            await User.create({
+                userName,
+                email,
+                photoUrl: googlePhoto
+
+            })
+        }
+        else {
+            if (!user.photoUrl && googlePhoto) {
+                user.photoUrl = googlePhoto
+                await user.save()
+            }
+        }
+
+        const token = await gentoken(user?._id);
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        return res.status(200).json({
+            message: "Sign In Successfully",
+            user,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({ message: `GoogleAuth error ${error}` })
+
+    }
+}

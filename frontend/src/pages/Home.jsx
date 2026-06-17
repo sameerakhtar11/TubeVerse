@@ -17,6 +17,7 @@ import { MdOutlineSubscriptions } from "react-icons/md";
 import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Profile from "../../component/Profile";
+import { useLocation } from "react-router-dom";
 
 function Home() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -26,6 +27,7 @@ function Home() {
     const navigate = useNavigate()
     const { userData } = useSelector(state => state.user)
     const [popup, setPopup] = useState(false)
+    const location = useLocation()
 
 
     const categories = [
