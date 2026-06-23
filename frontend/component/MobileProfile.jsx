@@ -147,8 +147,8 @@ function MobileProfile() {
                         onClick={() =>
                             navigate(
                                 userData?.channel
-                                    ? `/channel/${userData._id}`
-                                    : "/create-channel"
+                                    ? "/viewchannel"
+                                    : "/createchannel"
                             )
                         }
                     >

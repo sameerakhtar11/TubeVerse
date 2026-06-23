@@ -144,8 +144,8 @@ function Profile() {
                             onClick={() =>
                                 navigate(
                                     userData?.channel
-                                        ? `/channel/${userData._id}`
-                                        : "/create-channel"
+                                        ? "/viewchannel"
+                                        : "/createchannel"
                                 )
                             }
                             className="mt-2 text-sm text-blue-400 hover:text-blue-300 transition"
@@ -220,8 +220,8 @@ function Profile() {
                     onClick={() =>
                         navigate(
                             userData?.channel
-                                ? `/channel/${userData._id}`
-                                : "/create-channel"
+                                ? "/viewchannel"
+                                : "/createchannel"
                         )
                     }
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#3a3a3a] transition-colors duration-200"
